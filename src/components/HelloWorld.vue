@@ -1,42 +1,146 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+    <h4 class="mb-5">Encuentra Tu Ubicación</h4>
+    <div class="row">
+      <div class="col-3">
+        <b-list-group>
+          <b-list-group-item>Ciudad : {{location.city}}</b-list-group-item>
+          <b-list-group-item>Estado : {{location.regionName}}</b-list-group-item>
+          <b-list-group-item>Pais : {{location.country}}</b-list-group-item>
+          <b-list-group-item>IPS : {{location.isp}}</b-list-group-item>
+          <b-list-group-item>IP : {{location.query}}</b-list-group-item>
+          <b-list-group-item>Latitud : {{location.lat}}</b-list-group-item>
+          <b-list-group-item>Longitud : {{location.lon}}</b-list-group-item>
+        </b-list-group>
+      </div>
+      <div class="col-6">
+        <l-map
+          v-if="showMap"
+          :zoom="zoom"
+          :center="center"
+          :options="mapOptions"
+          style="height: 80%"
+          @update:center="centerUpdate"
+          @update:zoom="zoomUpdate"
+        >
+          <l-tile-layer :url="url" :attribution="attribution" />
+          <l-circle-marker :lat-lng="circle.center" :radius="circle.radius" :color="circle.color" />
+        </l-map>
+      </div>
+      <div class="col-3">
+        <b-form @submit="onSubmit" @reset="onReset">
+          <b-form-group
+            id="input-group-1"
+            label="Busca una ip"
+            label-for="input-1"
+            description="Ingresa la dirección ip del equipo que desees buscar"
+          >
+            <b-form-input id="input-1" v-model="form.ip" type="text" required placeholder="8.8.8.8"></b-form-input>
+          </b-form-group>
+          <b-button type="submit" variant="primary" class="mr-2">Buscar</b-button>
+          <b-button type="reset" variant="danger">Mi ubicación</b-button>
+        </b-form>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import { latLng } from "leaflet";
+import { LMap, LTileLayer, LCircleMarker } from "vue2-leaflet";
+import RequestService from "../services/requestService";
 export default {
-  name: 'HelloWorld',
+  name: "HelloWorld",
+  components: {
+    LMap,
+    LTileLayer,
+    LCircleMarker
+  },
+  created() {
+    this.getUsers();
+    this.getUsersAwait();
+    this.getLocation("");
+  },
   props: {
     msg: String
+  },
+  data() {
+    return {
+      form: {},
+      userList: [],
+      location: [],
+      zoom: 13,
+      center: latLng(47.41322, -1.219482),
+      url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      attribution:
+        '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+      withPopup: latLng(47.41322, -1.219482),
+      withTooltip: latLng(47.41422, -1.250482),
+      currentZoom: 13,
+      currentCenter: latLng(47.41322, -1.219482),
+      showParagraph: false,
+      mapOptions: {
+        zoomSnap: 0.5
+      },
+      showMap: true,
+      circle: {
+        center: [0, 0],
+        radius: 6,
+        color: "red"
+      }
+    };
+  },
+  methods: {
+    getUsers() {
+      RequestService.getUsers().then(data => {
+        this.userList = data;
+        console.log(this.userList);
+      });
+    },
+    async getUsersAwait() {
+      this.userList = await RequestService.getUsers();
+      console.log(this.userList);
+    },
+    async getLocation(ip) {
+      this.location = await RequestService.getLocation(ip);
+      this.center = latLng(this.location.lat, this.location.lon);
+      this.currentCenter = latLng(this.location.lat, this.location.lon);
+      this.circle.center = [this.location.lat, this.location.lon];
+      console.log(this.circle);
+    },
+    userLocaliztion() {
+      navigator.geolocation.getCurrentPosition(position => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        this.center = latLng(lat, lon);
+        this.currentCenter = latLng(lat, lon);
+        this.circle.center = [lat, lon];
+        console.log();
+      });
+    },
+    zoomUpdate(zoom) {
+      this.currentZoom = zoom;
+    },
+    centerUpdate(center) {
+      this.currentCenter = center;
+    },
+    showLongText() {
+      this.showParagraph = !this.showParagraph;
+    },
+    innerClick() {
+      alert("Click!");
+    },
+    onSubmit(evt) {
+      evt.preventDefault();
+      this.getLocation(this.form.ip);
+    },
+    onReset(evt) {
+      evt.preventDefault();
+      this.form.ip = "";
+      this.getLocation("");
+    }
   }
-}
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
