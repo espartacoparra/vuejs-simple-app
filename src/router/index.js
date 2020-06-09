@@ -16,6 +16,11 @@ const routes = [
     component: () => import('../views/About.vue')
   },
   {
+    path: '/charts',
+    name: 'charts',
+    component: () => import('../views/Charts.vue')
+  },
+  {
     path: '/*',
     redirect: '/'
   }

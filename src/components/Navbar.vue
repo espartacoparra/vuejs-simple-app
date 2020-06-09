@@ -8,8 +8,8 @@
         <router-link to="/about">
           <b-navbar-brand>About</b-navbar-brand>
         </router-link>
-        <router-link to="/contact">
-          <b-navbar-brand>Contact</b-navbar-brand>
+        <router-link to="/charts">
+          <b-navbar-brand>Charts</b-navbar-brand>
         </router-link>
         <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
         <b-collapse id="nav-collapse" is-nav>

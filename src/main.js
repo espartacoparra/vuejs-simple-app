@@ -24,6 +24,14 @@ Vue.component('l-map', LMap);
 Vue.component('l-tile-layer', LTileLayer);
 Vue.component('l-marker', LMarker);
 //leaflet********************
+//apexchart
+import VueApexCharts from 'vue-apexcharts'
+Vue.component('apexchart', VueApexCharts)
+//apexchart******************
+//HighchartsVue
+import HighchartsVue from 'highcharts-vue'
+Vue.use(HighchartsVue)
+//HighchartsVue**************
 
 
 Vue.config.productionTip = false
