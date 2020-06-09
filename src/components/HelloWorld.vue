@@ -94,19 +94,16 @@ export default {
     getUsers() {
       RequestService.getUsers().then(data => {
         this.userList = data;
-        console.log(this.userList);
       });
     },
     async getUsersAwait() {
       this.userList = await RequestService.getUsers();
-      console.log(this.userList);
     },
     async getLocation(ip) {
       this.location = await RequestService.getLocation(ip);
       this.center = latLng(this.location.lat, this.location.lon);
       this.currentCenter = latLng(this.location.lat, this.location.lon);
       this.circle.center = [this.location.lat, this.location.lon];
-      console.log(this.circle);
     },
     userLocaliztion() {
       navigator.geolocation.getCurrentPosition(position => {
@@ -115,7 +112,6 @@ export default {
         this.center = latLng(lat, lon);
         this.currentCenter = latLng(lat, lon);
         this.circle.center = [lat, lon];
-        console.log();
       });
     },
     zoomUpdate(zoom) {

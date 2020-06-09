@@ -23,7 +23,6 @@ export default {
   methods: {
     async getUsers() {
       this.users = await RequestService.getUsers();
-      console.log(this.users);
     }
   },
   computed: {}
